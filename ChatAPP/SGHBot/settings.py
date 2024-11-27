@@ -35,11 +35,11 @@ logfire.configure()
 logfire.instrument_django()
 
 # Retrieve the API key
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+#OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 SERPER_API_KEY = os.getenv('SERPER_API_KEY')
 
-if not OPENAI_API_KEY:
-    raise ValueError("No OPENAI_API_KEY found in environment variables.")
+# if not OPENAI_API_KEY:
+#    raise ValueError("No OPENAI_API_KEY found in environment variables.")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
