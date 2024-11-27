@@ -1,0 +1,125 @@
+<!DOCTYPE html> 
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>SGH Chatbot</title>
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.2/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/custom.css">
+    <link rel="stylesheet" href="/static/css/output.css">
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.4.1/purify.min.js"></script>
+</head>
+<body class="bg-gray-800 text-white"> 
+    <style>
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+            background: #444; /* Dark background for the arrow keys */
+            border-radius: 50%; /* Makes the arrows rounded */
+            width: 10px; /* Adjust the size of the arrows */
+            height: 10px; /* Adjust the size of the arrows */
+            cursor: pointer;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield; /* Hides the arrows in Firefox */
+            appearance: textfield; /* Ensure consistency across browsers */
+            background: #333; /* Matches the input field background */
+            color: white; /* Text color */
+            border: 1px solid #555; /* Border for the input field */
+            padding: 5px 10px; /* Spacing inside the input field */
+            border-radius: 8px; /* Rounded corners for the input field */
+        }
+    </style>
+    <!-- Navigation -->
+    <nav class="bg-gray-700 flex items-center justify-between px-4 py-2">
+        <img src="/static/images/SGH-Logo.png" alt="SGH Service Logo" id="logo" class="h-16">
+        <div id="nav-links" class="flex space-x-4">
+            <a href="#" class="hover:bg-gray-600 px-3 py-2 rounded">Startseite</a>
+            <a href="https://sgh-service.com/unternehmen/" class="hover:bg-gray-600 px-3 py-2 rounded">Über uns</a>
+            <a href="https://sgh-service.com/category/expert-zone/" class="hover:bg-gray-600 px-3 py-2 rounded">Leistungen</a>
+            <a href="https://sgh-service.com/kontakt/" class="hover:bg-gray-600 px-3 py-2 rounded">Kontakt</a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="p-4">
+        <!--script>
+            const userApiKey = 'b9527153-d056-4abf-af60-b8b7f5835a94';
+        </script-->
+        <div id="chat_window" class="vh-80 vw-80 bg-gray-600 mx-auto my-auto border border-gray-500 rounded-xl flex flex-row">
+            <!-- Chat History -->
+            <div id="batch_history" class="border-r border-gray-400 flex flex-col w-1/4 overflow-y-auto overflow-x-hidden z-0"></div>
+
+            <!-- Chat Area -->
+            <div id="chat" class="flex flex-col w-3/4">
+                <div id="chat_assistant" class="flex items-center justify-between p-4 bg-gray-700 border-b border-gray-500 rounded-tr-xl">
+                    <div class="flex items-center space-x-2 justify-end ml-auto">
+                        <button id="chat-btn" class="flex justify-end px-2 py-1 hover:border hover:border-1 hover:border-[#8198CD] hover:rounded hover:rounded-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#8198CD" class="size-6 mr-1">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" />
+                            </svg>
+                            <span id="chat-text" class="text-[#8198CD]">Chat</span>                                 
+                        </button>
+                        <button id="new_batch" class="flex justify-end px-2 py-1 hover:border hover:border-1 hover:border-[#8198CD] hover:rounded hover:rounded-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#8198CD" class="w-6 h-6 text-gray-300">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 16.875h3.375m0 0h3.375m-3.375 0V13.5m0 3.375v3.375M6 10.5h2.25a2.25 2.25 0 0 0 2.25-2.25V6a2.25 2.25 0 0 0-2.25-2.25H6A2.25 2.25 0 0 0 3.75 6v2.25A2.25 2.25 0 0 0 6 10.5Zm0 9.75h2.25A2.25 2.25 0 0 0 10.5 18v-2.25a2.25 2.25 0 0 0-2.25-2.25H6a2.25 2.25 0 0 0-2.25 2.25V18A2.25 2.25 0 0 0 6 20.25Zm9.75-9.75H18a2.25 2.25 0 0 0 2.25-2.25V6A2.25 2.25 0 0 0 18 3.75h-2.25A2.25 2.25 0 0 0 13.5 6v2.25a2.25 2.25 0 0 0 2.25 2.25Z" />
+                            </svg>
+                        </button>
+                        <form class="p-4">
+                            <!-- Numerical input field -->
+                            <input
+                                type="number"
+                                name="max_tokens"
+                                id="max_tokens"
+                                placeholder="Set max_tokens..."
+                                class="flex items-center justify-between p-4 bg-gray-700 border border-gray-500 rounded-xl h-6 text-white"
+                                min="8192"
+                                value="10240"
+                                max="128000"
+                                class="m-4 p-4"
+                            >
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Chat Messages -->
+                <div id="batch_messages" class="flex flex-col flex-grow overflow-y-auto p-4 space-y-4">
+                    <div id="batches" class="space-y-4"></div>
+                    <button id="add-batch" class="w-10 h-10 bg-gray-700 flex items-center justify-center rounded-full hover:shadow hover:scale-110 transition mr-auto ml-auto">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="white" class="size-6 w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    </button>
+                </div>           
+                <button id="send-request" class="bg-gray-700 text-white px-4 py-2 rounded mt-4 self-end m-5 hover:shadow hover:scale-110 transition">
+                    Send Request
+                </button>         
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-700 text-white text-center p-1 fixed bottom-0 w-full ml-auto mr-auto h-auto">
+        &copy; 2023 SGH Service GmbH
+    </footer>
+
+    <!-- Image Modal -->
+    <div id="image-modal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-75 hidden">
+        <span class="close-button absolute top-4 right-4 cursor-pointer text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="#FFFFFF" viewBox="0 0 24 24" class="w-6 h-6">
+                <path fill-rule="evenodd" d="M6.225 4.811a.75.75 0 011.06 0L12 9.525l4.715-4.714a.75.75 0 111.06 1.06L13.06 10.586l4.715 4.714a.75.75 0 11-1.06 1.061L12 11.646l-4.715 4.715a.75.75 0 11-1.06-1.061l4.714-4.714-4.714-4.714a.75.75 0 010-1.06z" clip-rule="evenodd" />
+            </svg>
+        </span>
+        <img class="modal-content max-w-full max-h-full object-contain" id="full-image" alt="Full Size Image" draggable="false">
+    </div>
+
+    <!-- External JavaScript File -->
+    <script src="/static/js/jobs.js"></script>
+</body>
+</html>
