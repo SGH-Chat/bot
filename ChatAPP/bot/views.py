@@ -2,6 +2,7 @@ import os
 import re
 import tempfile
 import base64
+from dotenv import load_dotenv
 import faiss
 import fitz
 import numpy as np
@@ -27,6 +28,8 @@ import hashlib
 import time
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+
+load_dotenv()
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -57,7 +60,7 @@ def create_user(request):
 @permission_classes([IsAuthenticated])
 def assistant_endpoint(request):
     # Retrieve the API key from settings for OpenAI authentication
-    openai_api_key = settings.OPENAI_API_KEY
+    openai_api_key = os.getenv('OPENAI_API_KEY')
 
     # Get the API key from headers for user authentication
     user_api_key = request.headers.get('X-API-Key')
@@ -102,7 +105,7 @@ def assistant_endpoint(request):
 @permission_classes([IsAuthenticated])
 def chat_endpoint(request):
     # Retrieve the API key from settings for OpenAI authentication
-    openai_api_key = settings.OPENAI_API_KEY
+    openai_api_key = os.getenv('OPENAI_API_KEY')
 
     # Get the API key from headers for user authentication
     user_api_key = request.headers.get('X-API-Key')
@@ -316,7 +319,7 @@ def upload_file(request):
         return Response({"error": "All fields (chat_id, purpose, mime_type, file) are required."}, status=status.HTTP_400_BAD_REQUEST)
 
     # Retrieve the API key from settings
-    openai_api_key = settings.OPENAI_API_KEY
+    openai_api_key = os.getenv('OPENAI_API_KEY')
 
     # Initialize the upload client
     upload_client = Upload(api_key=openai_api_key)
@@ -355,7 +358,7 @@ def search(request):
     Endpoint to handle search requests.
     """
     serper_api_key = settings.SERPER_API_KEY
-    openai_api_key = settings.OPENAI_API_KEY
+    openai_api_key = os.getenv('OPENAI_API_KEY')
     searchQuery = request.data.get('searchQuery')
     searchMail = request.data.get('searchMail')
 
@@ -541,7 +544,7 @@ def search(request):
     Endpoint to handle search requests.
     """
     serper_api_key = settings.SERPER_API_KEY
-    openai_api_key = settings.OPENAI_API_KEY
+    openai_api_key = os.getenv('OPENAI_API_KEY')
     searchQuery = request.data.get('searchQuery')
     searchMail = request.data.get('searchMail')
 
@@ -709,7 +712,7 @@ def semantic_search(request):
     """
     Endpoint to create querys for semantic search.
     """
-    openai_api_key = settings.OPENAI_API_KEY
+    openai_api_key = os.getenv('OPENAI_API_KEY')
     message = request.data.get('query')
     client = Completion(openai_api_key, "You are an assistant which helps formulating search querys for semantic search", model="gpt-3.5-turbo")
     result = asyncio.run(client.completion(f"Rewrite this into a query that helps in executing semantic while rewriting the search query to clearly express the meaning and intent behind: '{message}'"))
@@ -732,7 +735,7 @@ def create_batch_request(request):
         return Response({"error": "Requests data is required."}, status=status.HTTP_400_BAD_REQUEST)
 
     # Initialize BatchRequests with OpenAI API key
-    openai_api_key = settings.OPENAI_API_KEY
+    openai_api_key = os.getenv('OPENAI_API_KEY')
     batch_handler = BatchRequests(api_key=openai_api_key, max_tokens=max_tokens)
 
     try:
@@ -776,7 +779,7 @@ def get_batches(request):
     """
     try:
         # Fetch all batches from the database
-        api_key = settings.OPENAI_API_KEY
+        api_key = os.getenv('OPENAI_API_KEY')
         batches = Batch.objects.all().order_by('-created_at')
 
         # Create an instance of BatchRequests
@@ -821,7 +824,7 @@ def get_batch_requests(request):
     """
     Endpoint to retrieve all requests for a specific batch.
     """
-    api_key = settings.OPENAI_API_KEY
+    api_key = os.getenv('OPENAI_API_KEY')
     logger.info("Received request to fetch batch requests.")
     batch_id = request.data.get('batch_id')
     batch = BatchRequests(api_key=api_key, max_tokens=1000)
@@ -898,7 +901,7 @@ def cancel_batch(request):
     if not batch_id:
         return Response({"error": "Batch ID is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-    openai_api_key = settings.OPENAI_API_KEY
+    openai_api_key = os.getenv('OPENAI_API_KEY')
     batch_handler = BatchRequests(api_key=openai_api_key, max_tokens=4096)
 
     try:
@@ -921,7 +924,7 @@ def retrieve_batch_result(request):
     if not batch_id:
         return Response({"error": "Batch ID is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-    openai_api_key = settings.OPENAI_API_KEY
+    openai_api_key = os.getenv('OPENAI_API_KEY')
     batch_handler = BatchRequests(api_key=openai_api_key, max_tokens=4096)
 
     try:
@@ -952,7 +955,7 @@ def chat_with_doc(request):
     Endpoint to retrieve the context based on the user's message and uploaded documents.
     """
     # Retrieve the API key from settings
-    openai_api_key = settings.OPENAI_API_KEY
+    openai_api_key = os.getenv('OPENAI_API_KEY')
     embedding_model = "text-embedding-3-small"  # Replace with your preferred model
 
     # Define paths for the FAISS index and document mapping
